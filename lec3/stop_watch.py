@@ -2,6 +2,8 @@
 import simplegui
 status_running = False
 time_elapsed = 0
+successful_stop = 0
+total_stop = 0
 
 # define event handler for timer with 0.1 sec interval
 def timerHandler():
@@ -22,20 +24,36 @@ def format(t):
         
 # define event handlers for buttons; "Start", "Stop", "Reset"
 def startHandler():
+    global status_running
+    status_running = True
     timer.start()
 
 def stopHandler():
-    timer.stop()
-
+    global successful_stop
+    global status_running
+    if status_running:
+        global total_stop
+        timer.stop()
+        total_stop += 1
+        if time_elapsed % 50 == 0:
+            successful_stop += 1
+    status_running = False
+ 
 def resetHandler():
-    timer.stop()
     global time_elapsed
+    global successful_stop
+    global total_stop
+    global status_running
+    timer.stop()
+    successful_stop = 0
+    total_stop = 0
     time_elapsed = 0
-
+    status_running = False
 
 # define draw handler
 def drawHandler(canvas):
     canvas.draw_text(format( time_elapsed ), (80, 120), 50, "white" )
+    canvas.draw_text( "%d / %d" % (successful_stop, total_stop)  , (260, 15), 20, "green" )
     
 # create frame
 frame = simplegui.create_frame("stop_watch", 300, 200)
