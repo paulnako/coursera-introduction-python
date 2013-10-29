@@ -2,9 +2,14 @@
 import simplegui
 status_running = False
 time_elapsed = 0
+
+# define event handler for timer with 0.1 sec interval
 def timerHandler():
-    pass
+    global time_elapsed
+    time_elapsed += 1
+
 timer = simplegui.create_timer(100,timerHandler )
+
 # template for "Stopwatch: The Game"
 
 # define global variables
@@ -27,21 +32,16 @@ def resetHandler():
     global time_elapsed
     time_elapsed = 0
 
-# define event handler for timer with 0.1 sec interval
-def timerHandler():
-    global time_elapsed
-    ++time_elapsed 
 
 # define draw handler
 def drawHandler(canvas):
-    canvas.draw_text(format( time_elapsed ), (100, 100), "white" )
-
+    canvas.draw_text(format( time_elapsed ), (80, 120), 50, "white" )
     
 # create frame
 frame = simplegui.create_frame("stop_watch", 300, 200)
-frame.add_button("start", startHandler)
-frame.add_button("stop", stopHandler)
-frame.add_button("reset", resetHandler)
+frame.add_button("Start", startHandler)
+frame.add_button("Stop", stopHandler)
+frame.add_button("Reset", resetHandler)
 
 # register event handlers
 frame.set_draw_handler(drawHandler)
