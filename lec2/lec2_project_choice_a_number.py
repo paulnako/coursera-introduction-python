@@ -48,9 +48,9 @@ def input_guess(guess):
         print "Correct!\n"
         new_game()
         return
-    elif com_choice > guess_num:
-        print "Lower!"
     elif com_choice < guess_num:
+        print "Lower!"
+    elif com_choice > guess_num:
         print "Higher!"
 
     if rest == 0:
