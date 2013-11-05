@@ -2,10 +2,18 @@
 .AppleDouble
 .LSOverride
 Icon
-
+.swp
 
 # Thumbnails
 ._*
+
+# python
+*.pyc
+build/
+dist/
+*.egg-info
+*.mo
+bulkloader-log-*
 
 # Files that might appear on external disk
 .Spotlight-V100
