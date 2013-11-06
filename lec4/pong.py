@@ -14,8 +14,14 @@ HALF_PAD_WIDTH = PAD_WIDTH / 2
 HALF_PAD_HEIGHT = PAD_HEIGHT / 2
 LEFT = False
 RIGHT = True
+PADDLE_VEL = [0, 10]
 ball_pos = [WIDTH / 2,  HIGHT / 2]
 ball_vel = [1, 1]
+paddle1_pos = [PAD_WIDTH / 2,  HIGHT / 2] # start pos
+paddle2_pos = [WIDTH - PAD_WIDTH / 2,  HIGHT / 2] # start pos
+score1 = 0 
+score2 = 0
+
 
 # initialize ball_pos and ball_vel for new bal in middle of table
 # if direction is RIGHT, the ball's velocity is upper right, else upper left
@@ -47,15 +53,48 @@ def draw(c):
     c.draw_circle( BALL_RADIUS, 1, "red", "white")       
     
     # update paddle's vertical position, keep paddle on the screen
-    paddle1_pos = [paddle1_pos[0] + paddle1_vel[0], paddle1_pos[1] + paddle1_vel[1] ]  
-    paddle2_pos,
+    if paddle1_pos[1] - PAD_HEIGHT / 2 < 0 or paddle1_pos[1] + PAD_HEIGHT / 2 > HEIGHT: 
+        paddle1_pos = [ paddle1_pos[0] + paddle1_vel[0], paddle1_pos[1] + paddle1_vel[1] ]  
+    if paddle2_pos[1] - PAD_HEIGHT / 2 < 0 or paddle2_pos[1] + PAD_HEIGHT / 2 > HEIGHT: 
+        paddle2_pos = [ paddle2_pos[0] + paddle2_vel[0], paddle2_pos[1] + paddle2_vel[1] ]  
 
     # draw paddles
-    
+    canvas.draw_polygon(
+                         [
+                            [paddle1_pos[0] - PAD_WIDTH / 2, paddle1_pos[1] - PAD_HEIGHT / 2 ],
+                            [paddle1_pos[0] - PAD_WIDTH / 2, paddle1_pos[1] + PAD_HEIGHT / 2 ], 
+                            [paddle1_pos[0] + PAD_WIDTH / 2, paddle1_pos[1] - PAD_HEIGHT / 2 ], 
+                            [paddle1_pos[0] + PAD_WIDTH / 2, paddle1_pos[1] + PAD_HEIGHT / 2 ], 
+                        ],
+                        1, 
+                        'white',
+                        'white'
+                        )
+
+    canvas.draw_polygon(
+                         [
+                            [paddle2_pos[0] - PAD_WIDTH / 2, paddle2_pos[1] - PAD_HEIGHT / 2 ],
+                            [paddle2_pos[0] - PAD_WIDTH / 2, paddle2_pos[1] + PAD_HEIGHT / 2 ], 
+                            [paddle2_pos[0] + PAD_WIDTH / 2, paddle2_pos[1] - PAD_HEIGHT / 2 ], 
+                            [paddle2_pos[0] + PAD_WIDTH / 2, paddle2_pos[1] + PAD_HEIGHT / 2 ], 
+                        ],
+                        1, 
+                        'white',
+                        'white'
+                        )
     # draw scores
+    canvas.draw_text(str(score1), ( WIDTH / 2 - 20 , 40), 20 )
+    canvas.draw_text(str(score2), ( WIDTH / 2 + 20 , 40), 20 )
         
 def keydown(key):
     global paddle1_vel, paddle2_vel
+    if key == simplegui.KEY_MAP['up']:
+        paddle1_vel = PADDLE_VEL
+    elif key == simplegui.KEY_MAP['down']:
+        paddle1_vel = [ PADDLE_VEL[0] , -PADDLE_VEL[1] ]
+    elif key == simplegui.KEY_MAP['up']:
+        paddle1_vel = PADDLE_VEL
+        
    
 def keyup(key):
     global paddle1_vel, paddle2_vel
