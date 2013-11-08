@@ -16,10 +16,10 @@ LEFT = False
 RIGHT = True
 PADDLE_VEL = [0, 10]
 INITIAL_BALL_VEL = [1, 1]
-ball_pos = [WIDTH / 2,  HIGHT / 2]
+ball_pos = [WIDTH / 2,  HEIGHT / 2]
 ball_vel = INITIAL_BALL_VEL
-paddle1_pos = [PAD_WIDTH / 2,  HIGHT / 2] # start pos
-paddle2_pos = [WIDTH - PAD_WIDTH / 2,  HIGHT / 2] # start pos
+paddle1_pos = [PAD_WIDTH / 2,  HEIGHT / 2] # start pos
+paddle2_pos = [WIDTH - PAD_WIDTH / 2,  HEIGHT / 2] # start pos
 score1 = 0 
 score2 = 0
 
@@ -27,7 +27,7 @@ score2 = 0
 # if direction is RIGHT, the ball's velocity is upper right, else upper left
 def spawn_ball(direction):
     global ball_pos, ball_vel # these are vectors stored as lists
-    ball_pos = [WIDTH / 2,  HIGHT / 2]
+    ball_pos = [WIDTH / 2,  HEIGHT / 2]
     if direction == RIGHT:
         ball_vel = INITIAL_BALL_VEL
     elif direction == LEFT:
@@ -48,23 +48,23 @@ def timerHandler():
     global ball_vel
     
     # update ball pos. when reflect against the wall, velocity flip
-    if ball_poss[0] + ball_vel[0] - R <= 0:
+    if ball_pos[0] + ball_vel[0] - R <= 0:
         ball_vel[0] *= -ball_vel[0]
-        ball_poss[0] = 0 + R
-    elif ball_poss[0] + ball_vel[0] + R >= WIDTH:
+        ball_pos[0] = 0 + R
+    elif ball_pos[0] + ball_vel[0] + R >= WIDTH:
         ball_vel[0] *= -ball_vel[0]
-        ball_poss[0] = WIDTH - R
+        ball_pos[0] = WIDTH - R
     else:
-        ball_poss[0] = ball_poss[0] + ball_vel[0]        
+        ball_pos[0] = ball_pos[0] + ball_vel[0]        
 
-    if ball_poss[1] + ball_vel[1] - R <= 0:
+    if ball_pos[1] + ball_vel[1] - R <= 0:
         ball_vel[1] *= -ball_vel[1]
-        ball_poss[1] = R
-    elif ball_poss[1] + ball_vel[1] + R >= HEIGHT:
+        ball_pos[1] = R
+    elif ball_pos[1] + ball_vel[1] + R >= HEIGHT:
         ball_vel[1] *= -ball_vel[1]
-        ball_poss[1] = HEIGHT - R
+        ball_pos[1] = HEIGHT - R
     else:
-        ball_poss[1] = ball_poss[1] + ball_vel[1]        
+        ball_pos[1] = ball_pos[1] + ball_vel[1]        
 
     # update paddle's vertical position, keep paddle on the screen
     if paddle1_pos[1] - PAD_HEIGHT / 2 < 0 or paddle1_pos[1] + PAD_HEIGHT / 2 > HEIGHT: 
@@ -73,15 +73,15 @@ def timerHandler():
         paddle2_pos = [ paddle2_pos[0] + paddle2_vel[0], paddle2_pos[1] + paddle2_vel[1] ]  
 
     # count up
-    if ball_poss[0] - R <= 0 and ( \
-                                ( ball_poss[1] < paddle1_pos - PAD_HEIGHT / 2 ) or \
-                                 ( ball_poss[1] > paddle1_pos + PAD_HEIGHT / 2 ) \
+    if ball_pos[0] - R <= 0 and ( \
+                                ( ball_pos[1] < paddle1_pos - PAD_HEIGHT / 2 ) or \
+                                 ( ball_pos[1] > paddle1_pos + PAD_HEIGHT / 2 ) \
                                 )  :
         score2 += 1
         new_game()
-    elif ball_poss[0] + R <= 0 and ( 
-                                ( ball_poss[1] < paddle2_pos - PAD_HEIGHT / 2 ) or
-                                 ( ball_poss[1] > paddle2_pos + PAD_HEIGHT / 2 )
+    elif ball_pos[0] + R <= 0 and ( 
+                                ( ball_pos[1] < paddle2_pos - PAD_HEIGHT / 2 ) or
+                                 ( ball_pos[1] > paddle2_pos + PAD_HEIGHT / 2 )
                                 )  :
         score1 += 1
         new_game()
@@ -100,10 +100,10 @@ def draw(c):
     c.draw_line([WIDTH - PAD_WIDTH, 0],[WIDTH - PAD_WIDTH, HEIGHT], 1, "White")
         
     # draw ball
-    c.draw_circle( BALL_RADIUS, 1, "red", "white" )       
+    c.draw_circle( ball_pos, BALL_RADIUS, 1, "red", "white" )       
 
     # draw paddles
-    canvas.draw_polygon(
+    c.draw_polygon(
                          [
                             [paddle1_pos[0] - PAD_WIDTH / 2, paddle1_pos[1] - PAD_HEIGHT / 2 ],
                             [paddle1_pos[0] - PAD_WIDTH / 2, paddle1_pos[1] + PAD_HEIGHT / 2 ], 
@@ -115,7 +115,7 @@ def draw(c):
                         'white'
                         )
 
-    canvas.draw_polygon(
+    c.draw_polygon(
                          [
                             [paddle2_pos[0] - PAD_WIDTH / 2, paddle2_pos[1] - PAD_HEIGHT / 2 ],
                             [paddle2_pos[0] - PAD_WIDTH / 2, paddle2_pos[1] + PAD_HEIGHT / 2 ], 
@@ -127,8 +127,8 @@ def draw(c):
                         'white'
                         )
     # draw scores
-    canvas.draw_text(str(score1), ( WIDTH / 2 - 20 , 40), 20 )
-    canvas.draw_text(str(score2), ( WIDTH / 2 + 20 , 40), 20 )
+    c.draw_text(str(score1), ( WIDTH / 2 - 20 , 40), 20 )
+    c.draw_text(str(score2), ( WIDTH / 2 + 20 , 40), 20 )
         
 def keydown(key):
     global paddle1_vel, paddle2_vel
