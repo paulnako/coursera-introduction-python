@@ -18,8 +18,8 @@ PADDLE_VEL = [0, 10]
 INITIAL_BALL_VEL = [1, 1]
 ball_pos = [WIDTH / 2,  HEIGHT / 2]
 ball_vel = INITIAL_BALL_VEL
-paddle1_pos = [PAD_WIDTH / 2,  HEIGHT / 2] # start pos
-paddle2_pos = [WIDTH - PAD_WIDTH / 2,  HEIGHT / 2] # start pos
+paddle1_pos = [HALF_PAD_WIDTH,  HEIGHT / 2] # start pos
+paddle2_pos = [WIDTH - HALF_PAD_WIDTH,  HEIGHT / 2] # start pos
 score1 = 0 
 score2 = 0
 
@@ -38,50 +38,54 @@ def new_game():
     global paddle1_pos, paddle2_pos, paddle1_vel, paddle2_vel, ball_vel  # these are numbers
     global score1, score2  # these are ints
     score1 = score2 = 0
-    paddle1_pos = paddle2_pos = paddle1_vel = paddle2_vel = [0, 0]
+    paddle1_vel = paddle2_vel = [0, 0]
     ball_vel = INITIAL_BALL_VEL
+    paddle1_pos = [HALF_PAD_WIDTH,  HEIGHT / 2] # start pos
+    paddle2_pos = [WIDTH - HALF_PAD_WIDTH,  HEIGHT / 2] # start pos
     
     # notify player to start and take some seconds until start
     # TODO
 
+    spawn_ball(RIGHT)
+
 def timerHandler():
-    global ball_vel
+    global ball_pos, paddle1_pos, paddle2_pos, ball_vel, score1, score2
     
     # update ball pos. when reflect against the wall, velocity flip
-    if ball_pos[0] + ball_vel[0] - R <= 0:
-        ball_vel[0] *= -ball_vel[0]
-        ball_pos[0] = 0 + R
-    elif ball_pos[0] + ball_vel[0] + R >= WIDTH:
-        ball_vel[0] *= -ball_vel[0]
-        ball_pos[0] = WIDTH - R
+    if ball_pos[0] + ball_vel[0] - BALL_RADIUS <= 0:
+        ball_vel[0] *= -1
+        ball_pos[0] = 0 + BALL_RADIUS
+    elif ball_pos[0] + ball_vel[0] + BALL_RADIUS >= WIDTH:
+        ball_vel[0] *= -1
+        ball_pos[0] = WIDTH - BALL_RADIUS
     else:
         ball_pos[0] = ball_pos[0] + ball_vel[0]        
 
-    if ball_pos[1] + ball_vel[1] - R <= 0:
-        ball_vel[1] *= -ball_vel[1]
-        ball_pos[1] = R
-    elif ball_pos[1] + ball_vel[1] + R >= HEIGHT:
-        ball_vel[1] *= -ball_vel[1]
-        ball_pos[1] = HEIGHT - R
+    if ball_pos[1] + ball_vel[1] - BALL_RADIUS <= 0:
+        ball_vel[1] *= -1
+        ball_pos[1] = BALL_RADIUS
+    elif ball_pos[1] + ball_vel[1] + BALL_RADIUS >= HEIGHT:
+        ball_vel[1] *= -1
+        ball_pos[1] = HEIGHT - BALL_RADIUS
     else:
         ball_pos[1] = ball_pos[1] + ball_vel[1]        
 
     # update paddle's vertical position, keep paddle on the screen
-    if paddle1_pos[1] - PAD_HEIGHT / 2 < 0 or paddle1_pos[1] + PAD_HEIGHT / 2 > HEIGHT: 
+    if paddle1_pos[1] - HALF_PAD_HEIGHT < 0 or paddle1_pos[1] + HALF_PAD_HEIGHT > HEIGHT: 
         paddle1_pos = [ paddle1_pos[0] + paddle1_vel[0], paddle1_pos[1] + paddle1_vel[1] ]  
-    if paddle2_pos[1] - PAD_HEIGHT / 2 < 0 or paddle2_pos[1] + PAD_HEIGHT / 2 > HEIGHT: 
+    if paddle2_pos[1] - HALF_PAD_HEIGHT < 0 or paddle2_pos[1] + HALF_PAD_HEIGHT > HEIGHT: 
         paddle2_pos = [ paddle2_pos[0] + paddle2_vel[0], paddle2_pos[1] + paddle2_vel[1] ]  
 
     # count up
-    if ball_pos[0] - R <= 0 and ( \
-                                ( ball_pos[1] < paddle1_pos - PAD_HEIGHT / 2 ) or \
-                                 ( ball_pos[1] > paddle1_pos + PAD_HEIGHT / 2 ) \
+    if ball_pos[0] - BALL_RADIUS <= 0 and ( \
+                                ( ball_pos[1] < paddle1_pos[1] - HALF_PAD_HEIGHT ) or \
+                                 ( ball_pos[1] > paddle1_pos[1] + HALF_PAD_HEIGHT ) \
                                 )  :
         score2 += 1
         new_game()
-    elif ball_pos[0] + R <= 0 and ( 
-                                ( ball_pos[1] < paddle2_pos - PAD_HEIGHT / 2 ) or
-                                 ( ball_pos[1] > paddle2_pos + PAD_HEIGHT / 2 )
+    elif ball_pos[0] + BALL_RADIUS <= 0 and ( 
+                                ( ball_pos[1] < paddle2_pos[1] - HALF_PAD_HEIGHT ) or
+                                 ( ball_pos[1] > paddle2_pos[1] + HALF_PAD_HEIGHT )
                                 )  :
         score1 += 1
         new_game()
@@ -105,10 +109,10 @@ def draw(c):
     # draw paddles
     c.draw_polygon(
                          [
-                            [paddle1_pos[0] - PAD_WIDTH / 2, paddle1_pos[1] - PAD_HEIGHT / 2 ],
-                            [paddle1_pos[0] - PAD_WIDTH / 2, paddle1_pos[1] + PAD_HEIGHT / 2 ], 
-                            [paddle1_pos[0] + PAD_WIDTH / 2, paddle1_pos[1] - PAD_HEIGHT / 2 ], 
-                            [paddle1_pos[0] + PAD_WIDTH / 2, paddle1_pos[1] + PAD_HEIGHT / 2 ], 
+                            [paddle1_pos[0] - HALF_PAD_WIDTH, paddle1_pos[1] - HALF_PAD_HEIGHT ],
+                            [paddle1_pos[0] + HALF_PAD_WIDTH, paddle1_pos[1] - HALF_PAD_HEIGHT ], 
+                            [paddle1_pos[0] + HALF_PAD_WIDTH, paddle1_pos[1] + HALF_PAD_HEIGHT ], 
+                            [paddle1_pos[0] - HALF_PAD_WIDTH, paddle1_pos[1] + HALF_PAD_HEIGHT ], 
                         ],
                         1, 
                         'white',
@@ -117,18 +121,18 @@ def draw(c):
 
     c.draw_polygon(
                          [
-                            [paddle2_pos[0] - PAD_WIDTH / 2, paddle2_pos[1] - PAD_HEIGHT / 2 ],
-                            [paddle2_pos[0] - PAD_WIDTH / 2, paddle2_pos[1] + PAD_HEIGHT / 2 ], 
-                            [paddle2_pos[0] + PAD_WIDTH / 2, paddle2_pos[1] - PAD_HEIGHT / 2 ], 
-                            [paddle2_pos[0] + PAD_WIDTH / 2, paddle2_pos[1] + PAD_HEIGHT / 2 ], 
+                            [paddle2_pos[0] - HALF_PAD_WIDTH, paddle2_pos[1] - HALF_PAD_HEIGHT ],
+                            [paddle2_pos[0] + HALF_PAD_WIDTH, paddle2_pos[1] - HALF_PAD_HEIGHT ], 
+                            [paddle2_pos[0] + HALF_PAD_WIDTH, paddle2_pos[1] + HALF_PAD_HEIGHT ], 
+                            [paddle2_pos[0] - HALF_PAD_WIDTH, paddle2_pos[1] + HALF_PAD_HEIGHT ], 
                         ],
                         1, 
                         'white',
                         'white'
                         )
     # draw scores
-    c.draw_text(str(score1), ( WIDTH / 2 - 20 , 40), 20 )
-    c.draw_text(str(score2), ( WIDTH / 2 + 20 , 40), 20 )
+    c.draw_text(str(score1), ( WIDTH / 2 - 20 , 40), 20, "white" )
+    c.draw_text(str(score2), ( WIDTH / 2 + 20 , 40), 20, "white" )
         
 def keydown(key):
     global paddle1_vel, paddle2_vel
