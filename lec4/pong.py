@@ -34,10 +34,9 @@ paddle2_direction = ""
 def spawn_ball(direction):
     global ball_pos, ball_vel # these are vectors stored as lists
     ball_pos = [WIDTH / 2,  HEIGHT / 2]
-    if direction == RIGHT:
-        ball_vel = [ INITIAL_BALL_VEL[0], INITIAL_BALL_VEL[1]]
-    elif direction == LEFT:
-        ball_vel = [ -1 * INITIAL_BALL_VEL[0], INITIAL_BALL_VEL[1]]
+    ball_vel = [ random.randrange(2, 5), random.randrange(1, 4) ]
+    if direction == LEFT:
+        ball_vel[0] *= -1
 
 # define event handlers
 def new_game(direction = random.choice([RIGHT, LEFT])):
