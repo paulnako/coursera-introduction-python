@@ -28,9 +28,10 @@ def new_game():
 def mouseclick(pos):
     global one_previous, two_previous, state, counter
     # add game state logic here
+    if counter == 0:
+        counter += 1
     selected = pos[0] // 50
     if not exposed[ selected ]:
-        counter += 1
         if state == 0:
             state = 1
             exposed[ selected ] = True
@@ -38,6 +39,7 @@ def mouseclick(pos):
             state = 2
             exposed[ selected ] = True
         elif state == 2:
+            counter += 1
             if numbers[one_previous] != numbers[two_previous]:
                 exposed[one_previous] = False
                 exposed[two_previous] = False
