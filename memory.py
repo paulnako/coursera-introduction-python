@@ -5,6 +5,11 @@
 import simplegui
 import random
 
+state = 0
+
+one_previous = 0
+two_previous = 0
+
 numbers = range(0, 8) + range(0, 8)
 random.shuffle(numbers)
 
@@ -18,8 +23,23 @@ def new_game():
 # define event handlers
 def mouseclick(pos):
     # add game state logic here
-    exposed[ pos[0] // 50 ] = True
-    print pos[0] // 50
+    selected = pos[0] // 50
+    if not exposed[ selected ]:
+        two_previous = one_previous
+        one_previous = selected
+        if state == 0:
+            state = 1
+            exposed[ pos[0] // 50 ] = True
+        elif state == 1:
+            state = 2
+            exposed[ pos[0] // 50 ] = True
+        elif state == 2:
+            if numbers[one_previous] != numbers[two_previous]:
+                exposed[one_previous] = False
+                exposed[one_previous] = False
+
+                     
+            state = 1
 
     
                         
@@ -33,6 +53,8 @@ def draw(canvas):
                             "black", 
                             "green"
                             )
+
+    [ canvas.draw_text( str(numbers[i]), ( i * 50 + 5, 80), 80,  "black" ) for i in range( len( numbers ) ) if exposed[i] ]
 
 
 # create frame and add a button and labels
