@@ -16,9 +16,6 @@ card_back = simplegui.load_image("http://commondatastorage.googleapis.com/codesk
 in_play = False
 outcome = ""
 score = 0
-deck = Deck()
-player_hand = Hand()
-dealer_hand = Hand()
 
 # define globals for cards
 SUITS = ('C', 'S', 'H', 'D')
@@ -64,14 +61,26 @@ class Hand:
     def get_value(self):
         # count aces as 1, if the hand has an ace, then add 10 to hand value if it doesn't bust
         ace = 0
-        ace = reduce(sum, map( lambda x: 1,  filter (lambda x: x.rank == "A", self.card_list) ) , 0) 
-        print "VALUE " + str( map( lambda x: VALUES[x.rank],  self.card_list) )
-        total = reduce( sum, map( lambda x: VALUES[x.rank],  self.card_list) , 0)
-        return total if not ace == 1 else total + 10
+        ace = len( filter( lambda x:x.rank == "A", self.card_list ) )
+        total =  sum( map( lambda x: VALUES[x.rank],  self.card_list) )
+        return total if ace == 0 or total + 10 > 21 else total + 10
    
     def draw(self, canvas, pos):
         pass	# draw a hand on the canvas, use the draw method for cards
+
+    def __gt__(self, other):
+        return self.get_value() > other.get_value()
  
+    def __lt__(self, other):
+        return self.get_value() < other.get_value()
+
+    def __le__(self, other):
+        return self.get_value() <= other.get_value()
+
+    def __ge__(self, other):
+        return self.get_value() >= other.get_value()
+
+
         
 # define deck class 
 class Deck:
@@ -91,6 +100,9 @@ class Deck:
         return "Deck contains " + " ".join( map( str, self.card_list))
 
 
+deck = Deck()
+player_hand = Hand()
+dealer_hand = Hand()
 
 #define event handlers for buttons
 def deal():
@@ -98,7 +110,7 @@ def deal():
 
     # your code goes here
     deck = Deck()
-    self.shuffle()
+    deck.shuffle()
     player_hand = Hand()
     dealer_hand = Hand()
     player_hand.add_card( deck.deal_card() )
@@ -112,16 +124,43 @@ def deal():
     print "Dealer's Hand " + str(dealer_hand)
 
 def hit():
-    pass	# replace with your code below
- 
-    # if the hand is in play, hit the player
-   
-    # if busted, assign a message to outcome, update in_play and score
+    global in_play, player_hand, score, deck
+    if in_play:
+        # if the hand is in play, hit the player
+        if player_hand.get_value() <= 21 :
+            player_hand.add_card( deck.deal_card() )
+            print player_hand
+            print player_hand.get_value()
+        # if busted, assign a message to outcome, update in_play and score
+        if player_hand.get_value() > 21 :
+            print "You have busted."
+            in_play = False
+            score = 0
+
        
 def stand():
-    pass	# replace with your code below
-   
+    global in_play, dealer_hand, player_hand, score
     # if hand is in play, repeatedly hit dealer until his hand has value 17 or more
+    if in_play:
+        while dealer_hand.get_value() < 17:
+            dealer_hand.add_card( deck.deal_card() )
+            print dealer_hand
+            print dealer_hand.get_value()
+        if dealer_hand.get_value() > 21:
+            print "Player wins!"
+            in_play = False
+            score = 0
+            return
+        if dealer_hand >= player_hand:
+            print "Dealer wins!"
+            in_play = False
+            score = 0
+        else :
+            print "Player wins!"
+            in_play = False
+            score = 0
+
+
 
     # assign a message to outcome, update in_play and score
 
