@@ -49,8 +49,9 @@ class Card:
         
 # define hand class
 class Hand:
-    def __init__(self):
+    def __init__(self, whoami):
         self.card_list = []
+        self.whoami = whoami
 
     def __str__(self):
         return "Hand contains " + " ".join(  map( str,self.card_list) )
@@ -65,8 +66,13 @@ class Hand:
         total =  sum( map( lambda x: VALUES[x.rank],  self.card_list) )
         return total if ace == 0 or total + 10 > 21 else total + 10
    
-    def draw(self, canvas, pos):
-        pass	# draw a hand on the canvas, use the draw method for cards
+    def draw(self, canvas):
+        if self.whoami == "p":
+            pos_y = 200
+        elif self.whoami == "d":
+            pos_y = 300
+        for card, i in self.card_list, range(1, len(self.card_list)):
+            card.draw(canvas, [ 60 * i, pos_y ] )
 
     def __gt__(self, other):
         return self.get_value() > other.get_value()
@@ -101,8 +107,8 @@ class Deck:
 
 
 deck = Deck()
-player_hand = Hand()
-dealer_hand = Hand()
+player_hand = Hand("p")
+dealer_hand = Hand("d")
 
 #define event handlers for buttons
 def deal():
@@ -111,8 +117,8 @@ def deal():
     # your code goes here
     deck = Deck()
     deck.shuffle()
-    player_hand = Hand()
-    dealer_hand = Hand()
+    player_hand = Hand("p")
+    dealer_hand = Hand("d")
     player_hand.add_card( deck.deal_card() )
     player_hand.add_card( deck.deal_card() )
     dealer_hand.add_card( deck.deal_card() )
@@ -166,10 +172,8 @@ def stand():
 
 # draw handler    
 def draw(canvas):
-    # test to make sure that card.draw works, replace with your code below
-    
-    card = Card("S", "A")
-    card.draw(canvas, [300, 300])
+    dealer_hand.draw(canvas)
+    player_hand.draw(canvas)
 
 
 # initialization frame
