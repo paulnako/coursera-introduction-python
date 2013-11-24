@@ -20,6 +20,7 @@ outcome = ""
 score = 0
 winner_indicate = ""
 player_prompt = ""
+draw_back = lambda canvas: canvas
 
 # define globals for cards
 SUITS = ('C', 'S', 'H', 'D')
@@ -120,9 +121,10 @@ dealer_hand = Hand("d")
 
 #define event handlers for buttons
 def deal():
-    global outcome, in_play, player_hand, dealer_hand, deck, player_prompt, winner_indicate
+    global outcome, in_play, player_hand, dealer_hand, deck, player_prompt, winner_indicate, draw_back, score
     if in_play :
         winner_indicate = "You lose."
+        score -= 1
     else :
         winner_indicate = ""
 
@@ -141,11 +143,19 @@ def deal():
     # print "Player's Hand " + str(player_hand)
     # print "Dealer's Hand " + str(dealer_hand)
     player_prompt = "Hit or stand?"
+    draw_back = lambda canvas: canvas.draw_image(
+                                                    card_back, 
+                                                    CARD_BACK_CENTER, 
+                                                    CARD_BACK_SIZE,
+                                                    [CARD_BACK_CENTER[0] + 120, CARD_BACK_CENTER[1] + 200] ,
+                                                    CARD_SIZE
+                                                 )
 
 def finish():
-    global in_play, dealer_hand, player_hand, player_prompt
+    global in_play, dealer_hand, player_hand, player_prompt, draw_back
     in_play = False
     player_prompt = "New deal?"
+    draw_back = lambda canvas: canvas 
 
 def hit():
     global in_play, player_hand, deck, score, winner_indicate, player_prompt
@@ -189,7 +199,6 @@ def stand():
 
 # draw handler    
 def draw(canvas):
-    global card_back
     dealer_hand.draw(canvas)
     player_hand.draw(canvas)
 
@@ -201,10 +210,7 @@ def draw(canvas):
     canvas.draw_text(winner_indicate, [180, 180], 30, "black")
     canvas.draw_text(player_prompt, [180, 370], 30, "black")
 
-    if in_play:
-#        canvas.draw_image(card_back, CARD_CENTER, CARD_SIZE, [CARD_CENTER[0] + 120, CARD_CENTER[1] + 200] , CARD_SIZE)
-        canvas.draw_image(card_back, CARD_BACK_CENTER, CARD_BACK_SIZE, [CARD_BACK_CENTER[0] + 120, CARD_BACK_CENTER[1] + 200] , CARD_SIZE)
-     
+    draw_back(canvas) 
 
 # initialization frame
 frame = simplegui.create_frame("Blackjack", 600, 600)
