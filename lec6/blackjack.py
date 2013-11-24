@@ -18,6 +18,8 @@ card_back = simplegui.load_image("http://commondatastorage.googleapis.com/codesk
 in_play = False
 outcome = ""
 score = 0
+winner_indicate = ""
+player_prompt = ""
 
 # define globals for cards
 SUITS = ('C', 'S', 'H', 'D')
@@ -70,11 +72,12 @@ class Hand:
    
     def draw(self, canvas):
         if self.whoami == "p":
-            pos_y = 200
+            pos_y = 400
         elif self.whoami == "d":
-            pos_y = 300
-        for ( i, card) in enumerate( self.card_list):
+            pos_y = 200
+        for ( i, card) in enumerate( self.card_list[:5]):
             card.draw(canvas, [ 20 + 100 * ( i + 1), pos_y ] )
+
 
     def __gt__(self, other):
         return self.get_value() > other.get_value()
@@ -87,6 +90,9 @@ class Hand:
 
     def __ge__(self, other):
         return self.get_value() >= other.get_value()
+
+    def __eq__(self, other):
+        return self.get_value() == other.get_value()
 
 
         
@@ -114,7 +120,11 @@ dealer_hand = Hand("d")
 
 #define event handlers for buttons
 def deal():
-    global outcome, in_play, player_hand, dealer_hand, deck
+    global outcome, in_play, player_hand, dealer_hand, deck, player_prompt, winner_indicate
+    if in_play :
+        winner_indicate = "You lose."
+    else :
+        winner_indicate = ""
 
     # your code goes here
     deck = Deck()
@@ -128,55 +138,73 @@ def deal():
     
     in_play = True
 
-    print "Player's Hand " + str(player_hand)
-    print "Dealer's Hand " + str(dealer_hand)
+    # print "Player's Hand " + str(player_hand)
+    # print "Dealer's Hand " + str(dealer_hand)
+    player_prompt = "Hit or stand?"
+
+def finish():
+    global in_play, dealer_hand, player_hand, player_prompt
+    in_play = False
+    player_prompt = "New deal?"
 
 def hit():
-    global in_play, player_hand, score, deck
+    global in_play, player_hand, deck, score, winner_indicate, player_prompt
     if in_play:
         # if the hand is in play, hit the player
         if player_hand.get_value() <= 21 :
             player_hand.add_card( deck.deal_card() )
-            print player_hand
-            print player_hand.get_value()
+            # print player_hand
+            # print player_hand.get_value()
         # if busted, assign a message to outcome, update in_play and score
         if player_hand.get_value() > 21 :
-            print "You have busted."
-            in_play = False
-            score = 0
+            # print "You have busted."
+            winner_indicate = "You have busted."
+            score -= 1
+            finish()
 
        
 def stand():
-    global in_play, dealer_hand, player_hand, score
+    global in_play, dealer_hand, player_hand, score, winner_indicate, player_prompt
     # if hand is in play, repeatedly hit dealer until his hand has value 17 or more
     if in_play:
         while dealer_hand.get_value() < 17:
             dealer_hand.add_card( deck.deal_card() )
-            print dealer_hand
-            print dealer_hand.get_value()
+            # print dealer_hand
+            # print dealer_hand.get_value()
         if dealer_hand.get_value() > 21:
-            print "Player wins!"
-            in_play = False
-            score = 0
+            winner_indicate = "Player wins!"
+            score += 1
+            finish()
             return
         if dealer_hand >= player_hand:
-            print "Dealer wins!"
-            in_play = False
-            score = 0
+            winner_indicate = "Dealer wins!"
+            score -= 1
+            finish()
+            return
         else :
-            print "Player wins!"
-            in_play = False
-            score = 0
-
-
-
+            winner_indicate = "Player wins!"
+            score += 1
+            finish()
     # assign a message to outcome, update in_play and score
 
 # draw handler    
 def draw(canvas):
+    global card_back
     dealer_hand.draw(canvas)
     player_hand.draw(canvas)
 
+    canvas.draw_text("Blackjack", [80, 100], 50, "cyan")
+    canvas.draw_text("Score %d" % score, [400, 100], 30, "black")
+
+    canvas.draw_text("Dealer", [50, 180], 30, "black")
+    canvas.draw_text("Player" % score, [50, 370], 30, "black")
+    canvas.draw_text(winner_indicate, [180, 180], 30, "black")
+    canvas.draw_text(player_prompt, [180, 370], 30, "black")
+
+    if in_play:
+#        canvas.draw_image(card_back, CARD_CENTER, CARD_SIZE, [CARD_CENTER[0] + 120, CARD_CENTER[1] + 200] , CARD_SIZE)
+        canvas.draw_image(card_back, CARD_BACK_CENTER, CARD_BACK_SIZE, [CARD_BACK_CENTER[0] + 120, CARD_BACK_CENTER[1] + 200] , CARD_SIZE)
+     
 
 # initialization frame
 frame = simplegui.create_frame("Blackjack", 600, 600)
@@ -192,6 +220,3 @@ frame.set_draw_handler(draw)
 # get things rolling
 deal()
 frame.start()
-
-
-# remember to review the gradic rubric
