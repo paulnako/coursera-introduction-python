@@ -1,4 +1,6 @@
 # Mini-project #6 - Blackjack
+# -*- coding:utf-8 -*-
+
 
 import simplegui
 import random
@@ -71,8 +73,8 @@ class Hand:
             pos_y = 200
         elif self.whoami == "d":
             pos_y = 300
-        for card, i in self.card_list, range(1, len(self.card_list)):
-            card.draw(canvas, [ 60 * i, pos_y ] )
+        for ( i, card) in enumerate( self.card_list):
+            card.draw(canvas, [ 20 + 100 * ( i + 1), pos_y ] )
 
     def __gt__(self, other):
         return self.get_value() > other.get_value()
