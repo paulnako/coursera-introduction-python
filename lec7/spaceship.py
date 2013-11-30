@@ -108,9 +108,8 @@ class Ship:
     def update(self):
         add_vec(self.pos, self.vel, 0)
         add_vec(self.pos, self.vel, 1)
-
-        add_vec(self.angle, self.angle_vel, 0)
-        add_vec(self.angle, self.angle_vel, 1)
+        
+        self.angle
     
 # Sprite class
 class Sprite:
