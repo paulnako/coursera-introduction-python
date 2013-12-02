@@ -12,6 +12,8 @@ score = 0
 lives = 3
 time = 0.5
 
+angle_accel_timer = lambda x: x
+
 def add_vec(pos, vec, index):
     pos[index] = pos[index] + vec[index] 
 
@@ -109,7 +111,10 @@ class Ship:
         add_vec(self.pos, self.vel, 0)
         add_vec(self.pos, self.vel, 1)
         
-        self.angle
+        self.angle += self.angle_vel
+
+    def add_angle(self, ang_vel):
+        self.angle_vel += ang_vel
     
 # Sprite class
 class Sprite:
@@ -135,6 +140,20 @@ class Sprite:
     def update(self):
         pass        
 
+
+def keydown_handler(key):
+    angle_accel = 0.1
+    if key == simplegui.KEY_MAP['left']:
+        ang_vec = -angle_accel
+    elif key == simplegui.KEY_MAP['right']:
+        ang_vec = angle_accel
+
+    angle_accel_timer = simplegui.create_timer( ( 1000 / 60), lambda angle_accel: my_ship.add_angle(angle_accel))
+    angle_accel_timer.start()
+
+def keyup_handler(key):
+    if key == simplegui.KEY_MAP['left'] or key == simplegui.KEY_MAP['right']:
+        angle_accel_timer.stop()
            
 def draw(canvas):
     global time
@@ -172,6 +191,7 @@ a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1,1], 0, 0, missile_image,
 
 # register handlers
 frame.set_draw_handler(draw)
+frame.set_keydown_handler(keydown_handler)
 
 timer = simplegui.create_timer(1000.0, rock_spawner)
 
