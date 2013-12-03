@@ -11,8 +11,7 @@ HEIGHT = 600
 score = 0
 lives = 3
 time = 0.5
-
-angle_accel_timer = lambda x: x
+angle_accel = 0
 
 def add_vec(pos, vec, index):
     pos[index] = pos[index] + vec[index] 
@@ -105,7 +104,11 @@ class Ship:
         
     def draw(self,canvas):
         # canvas.draw_circle(self.pos, self.radius, 1, "White", "White")
-        canvas.draw_image(self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
+        if self.thrust:
+            image_center = [ self.image_center[0] + self.image_size[0], self.image_center[1] ] 
+        else: 
+            image_center =[ self.image_center[0], self.image_center[1]] 
+        canvas.draw_image(self.image, image_center, self.image_size, self.pos, self.image_size, self.angle)
 
     def update(self):
         add_vec(self.pos, self.vel, 0)
@@ -115,6 +118,9 @@ class Ship:
 
     def add_angle(self, ang_vel):
         self.angle_vel += ang_vel
+
+    def set_thrust(self, thrusting):
+        self.thrust = thrusting
     
 # Sprite class
 class Sprite:
@@ -140,20 +146,31 @@ class Sprite:
     def update(self):
         pass        
 
+def spin_ship():
+    if  - 0.05 < my_ship.angle_vel < 0.05 :
+        my_ship.add_angle(angle_accel)
 
 def keydown_handler(key):
-    angle_accel = 0.1
+    global angle_accel, angle_accel_timer, thrusting
+    angle_accel_val = 0.008
     if key == simplegui.KEY_MAP['left']:
-        ang_vec = -angle_accel
+        angle_accel = -angle_accel_val
+        angle_accel_timer = simplegui.create_timer( ( 1000 / 60), spin_ship)
+        angle_accel_timer.start()
     elif key == simplegui.KEY_MAP['right']:
-        ang_vec = angle_accel
+        angle_accel = angle_accel_val
+        angle_accel_timer = simplegui.create_timer( ( 1000 / 60), spin_ship)
+        angle_accel_timer.start()
+    elif key == simplegui.KEY_MAP['up']:
+        my_ship.set_thrust(True)
 
-    angle_accel_timer = simplegui.create_timer( ( 1000 / 60), lambda angle_accel: my_ship.add_angle(angle_accel))
-    angle_accel_timer.start()
 
 def keyup_handler(key):
     if key == simplegui.KEY_MAP['left'] or key == simplegui.KEY_MAP['right']:
+        my_ship.angle_vel = 0
         angle_accel_timer.stop()
+    elif key == simplegui.KEY_MAP['up']: 
+        my_ship.set_thrust(False)
            
 def draw(canvas):
     global time
@@ -185,13 +202,14 @@ def rock_spawner():
 frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 
 # initialize ship and two sprites
-my_ship = Ship([100, 200], [1,1], 0, ship_image, ship_info)
+my_ship = Ship([100, 200], [0,0], 0, ship_image, ship_info)
 a_rock = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0, asteroid_image, asteroid_info)
 a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1,1], 0, 0, missile_image, missile_info, missile_sound)
 
 # register handlers
 frame.set_draw_handler(draw)
 frame.set_keydown_handler(keydown_handler)
+frame.set_keyup_handler(keyup_handler)
 
 timer = simplegui.create_timer(1000.0, rock_spawner)
 
