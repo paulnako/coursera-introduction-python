@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+# http://www.codeskulptor.org/#user26_vCcy99ZSCB_0.py
 
 # program template for Spaceship
 import simplegui
@@ -113,14 +114,30 @@ class Ship:
     def update(self):
         add_vec(self.pos, self.vel, 0)
         add_vec(self.pos, self.vel, 1)
+        if self.pos[0] % WIDTH == 0:
+            self.pos[0] -= self.pos[0] // WIDTH + self.image_size[0]
+        if self.pos[1] % HEIGHT == 0:
+            self.pos[1] -= self.pos[1] // HEIGHT + self.image_size[1] 
         
         self.angle += self.angle_vel
+        angle_vec = angle_to_vector(self.angle)
+        angle_vec[0] *= 0.1
+        angle_vec[1] *= 0.1
+        if self.thrust:
+            add_vec(self.vel, angle_vec, 0)
+            add_vec(self.vel, angle_vec, 1)
 
     def add_angle(self, ang_vel):
         self.angle_vel += ang_vel
 
     def set_thrust(self, thrusting):
         self.thrust = thrusting
+        if thrusting:
+            ship_thrust_sound.rewind()
+            ship_thrust_sound.play()
+        else:
+            ship_thrust_sound.rewind()
+            ship_thrust_sound.pause()
     
 # Sprite class
 class Sprite:
@@ -202,7 +219,7 @@ def rock_spawner():
 frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 
 # initialize ship and two sprites
-my_ship = Ship([100, 200], [0,0], 0, ship_image, ship_info)
+my_ship = Ship([100, 200], [0, 0], 0, ship_image, ship_info)
 a_rock = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0, asteroid_image, asteroid_info)
 a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1,1], 0, 0, missile_image, missile_info, missile_sound)
 
