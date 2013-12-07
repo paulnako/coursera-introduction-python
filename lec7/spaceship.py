@@ -13,9 +13,9 @@ score = 0
 lives = 3
 time = 0.5
 angle_accel = 0
-last_press_spin = ""
 is_pressing_left = False
 is_pressing_right = False
+angle_accel_timer = None
 
 def add_vec(pos, vec, index):
     pos[index] = pos[index] + vec[index] 
@@ -178,33 +178,51 @@ def spin_ship():
         my_ship.add_angle(angle_accel)
 
 def keydown_handler(key):
-    global angle_accel, angle_accel_timer, thrusting, is_pressing_left, is_pressing_right, last_press_spin
+    global angle_accel, angle_accel_timer, thrusting, is_pressing_left, is_pressing_right 
     angle_accel_val = 0.008
     if key == simplegui.KEY_MAP['left']:
         angle_accel = -angle_accel_val
-        angle_accel_timer.stop()
+        if angle_accel_timer:
+            angle_accel_timer.stop()
         angle_accel_timer = simplegui.create_timer( ( 1000 / 60), spin_ship)
+        my_ship.angle_vel = 0
         angle_accel_timer.start()
-        last_press_spin = "left"
         is_pressing_left = True
     elif key == simplegui.KEY_MAP['right']:
         angle_accel = angle_accel_val
-        angle_accel_timer.stop()
+        if angle_accel_timer:
+            angle_accel_timer.stop()
         angle_accel_timer = simplegui.create_timer( ( 1000 / 60), spin_ship)
+        my_ship.angle_vel = 0
         angle_accel_timer.start()
-        last_press_spin = "right"
         is_pressing_right = True
     elif key == simplegui.KEY_MAP['up']:
         my_ship.set_thrust(True)
 
 
 def keyup_handler(key):
-    global angle_accel, angle_accel_timer, thrusting, is_pressing_left, is_pressing_right, last_press_spin
-    if key == simplegui.KEY_MAP['left'] or key == simplegui.KEY_MAP['right']:
-        my_ship.angle_vel = 0
-        angle_accel_timer.stop()
+    global angle_accel, angle_accel_timer, thrusting, is_pressing_left, is_pressing_right 
+    if key == simplegui.KEY_MAP['left']:
+        is_pressing_left = False
+        if is_pressing_left:
+            keydown_handler(simplegui.KEY_MAP['left'])
+        elif is_pressing_right:
+            keydown_handler(simplegui.KEY_MAP['right'])
+        else:
+            my_ship.angle_vel = 0
+            angle_accel_timer.stop()
+    elif key == simplegui.KEY_MAP['right']:
+        is_pressing_right = False
+        if is_pressing_left:
+            keydown_handler(simplegui.KEY_MAP['left'])
+        elif is_pressing_right:
+            keydown_handler(simplegui.KEY_MAP['right'])
+        else:
+            my_ship.angle_vel = 0
+            angle_accel_timer.stop()
     elif key == simplegui.KEY_MAP['up']: 
         my_ship.set_thrust(False)
+
            
 def draw(canvas):
     global time
