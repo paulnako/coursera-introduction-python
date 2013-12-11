@@ -202,9 +202,16 @@ class Sprite:
         self.angle += self.angle_vel
 
     def collide(self, other_object):
-        pass
+        other_pos = other_object.get_position()[0]
+        dist = (self.pos[0] - other_pos[0]) ** 2 + (self.pos[1] - other_pos[1]) ** 2
+        dist = sqrt(dist)
+        return self.radius + other_object.get_radius() <= dist
 
+    def get_position(self):
+        return self.pos
 
+    def get_radius(self):
+        return self.get_radius
 
 def spin_ship():
     if  - 0.07 < my_ship.angle_vel < 0.07 :
