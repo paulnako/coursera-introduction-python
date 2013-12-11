@@ -17,7 +17,7 @@ is_pressing_left = False
 is_pressing_right = False
 angle_accel_timer = None
 a_missile = None
-a_rock = None
+rock_group = set()
 lives = 0
 score = 0
 
@@ -201,10 +201,20 @@ class Sprite:
 
         self.angle += self.angle_vel
 
+    def collide(self, other_object):
+        pass
+
+
 
 def spin_ship():
     if  - 0.07 < my_ship.angle_vel < 0.07 :
         my_ship.add_angle(angle_accel)
+
+def process_sprite_group( canvas, sprite_set):
+    for sprite in sprite_set:
+        sprite.update()
+        sprite.draw(canvas)
+
 
 def keydown_handler(key):
     global angle_accel, angle_accel_timer, thrusting, is_pressing_left, is_pressing_right 
@@ -256,7 +266,7 @@ def keyup_handler(key):
 
            
 def draw(canvas):
-    global time, a_rock, a_missile, my_ship, lives, score
+    global time, rock_group, a_missile, my_ship, lives, score
     
     # animiate background
     time += 1
@@ -275,28 +285,28 @@ def draw(canvas):
 
     # draw ship and sprites
     my_ship.draw(canvas)
-    if a_rock:
-        a_rock.draw(canvas)
+    process_sprite_group(rock_group)
     if a_missile:
         a_missile.draw(canvas)
     
     # update ship and sprites
     my_ship.update()
-    if a_rock:
-        a_rock.update()
     if a_missile:
         a_missile.update()
             
 # timer handler that spawns a rock    
 def rock_spawner():
-    global a_rock
-    a_rock = Sprite([ random.randint(0, WIDTH) ,
-                      random.randint(0, HEIGHT)],
-                      [ random.randint(-10, 10 ) / 10.0, random.randint(-10, 10 ) / 10.0],
-                      random.randint(-68, 68 ) / 10.0,
-                      random.randint(0, 5 ) / 10.0,
-                      asteroid_image,
-                      asteroid_info)
+    global rock_group
+    if len( rock_group) < 12:
+        rock_group.add(
+                    Sprite([ random.randint(0, WIDTH) ,
+                          random.randint(0, HEIGHT)],
+                          [ random.randint(-10, 10 ) / 10.0, random.randint(-10, 10 ) / 10.0],
+                          random.randint(-68, 68 ) / 10.0,
+                          random.randint(-5, 5 ) / 10.0,
+                          asteroid_image,
+                          asteroid_info)
+                        )
 
 
     
