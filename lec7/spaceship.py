@@ -96,6 +96,13 @@ def angle_to_vector(ang):
 def dist(p,q):
     return math.sqrt((p[0] - q[0]) ** 2+(p[1] - q[1]) ** 2)
 
+def group_collide( group, other_object):
+    for obj in set(group):
+        if collide(obj, other_object):
+            group.remove( obj )
+            return True
+
+    return False
 
 # Ship class
 class Ship:
@@ -293,6 +300,10 @@ def draw(canvas):
     # draw ship and sprites
     my_ship.draw(canvas)
     process_sprite_group(rock_group)
+
+    if group_collide(my_ship, rock_group):
+        lives -= lives
+
     if a_missile:
         a_missile.draw(canvas)
     
@@ -300,6 +311,8 @@ def draw(canvas):
     my_ship.update()
     if a_missile:
         a_missile.update()
+
+
             
 # timer handler that spawns a rock    
 def rock_spawner():
