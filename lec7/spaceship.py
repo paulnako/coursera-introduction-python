@@ -17,6 +17,7 @@ is_pressing_right = False
 angle_accel_timer = None
 missile_group = set()
 rock_group = set()
+explosion_group = set()
 lives = 3
 score = 0
 started = False
@@ -99,6 +100,16 @@ def dist(p,q):
 def group_collide( group, other_object):
     for obj in set(group):
         if obj.collide( other_object):
+            explosion_sprite = Sprite( 
+                                        [ other_object.get_position()[0], other_object.get_position()[1] ],
+                                        [0, 0],
+                                        0,
+                                        0,
+                                        explosion_image,
+                                        explosion_info,
+                                        explosion_sound
+                                        )
+            explosion_group.add(explosion_sprite)
             group.remove( obj )
             return True
 
@@ -160,7 +171,7 @@ class Ship:
             add_vec(self.vel, angle_vec, 0)
             add_vec(self.vel, angle_vec, 1)
 
-        self.vel = [ self.vel[0] * 0.96, self.vel[1] * 0.96 ]
+        self.vel = [ self.vel[0] * 0.92, self.vel[1] * 0.92 ]
 
     def add_angle(self, ang_vel):
         self.angle_vel += ang_vel
@@ -218,7 +229,10 @@ class Sprite:
             sound.play()
    
     def draw(self, canvas):
-    #    canvas.draw_circle(self.pos, self.radius, 1, "Red", "Red")
+        #    canvas.draw_circle(self.pos, self.radius, 1, "Red", "Red")
+        if self.animated:
+            self.image_center = [ self.image_center[0] + self.image_size[0] * self.age, self.image_center[1] ]
+        
         canvas.draw_image( self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
     
     def update(self):
@@ -261,7 +275,7 @@ def process_sprite_group( canvas, sprite_set):
 
 def keydown_handler(key):
     global angle_accel, angle_accel_timer, thrusting, is_pressing_left, is_pressing_right 
-    angle_accel_val = 0.03
+    angle_accel_val = 0.008
     if key == simplegui.KEY_MAP['left']:
         angle_accel = -angle_accel_val
         if angle_accel_timer:
@@ -344,6 +358,7 @@ def draw(canvas):
     my_ship.draw(canvas)
     process_sprite_group(canvas, rock_group)
     process_sprite_group(canvas, missile_group)
+    process_sprite_group(canvas, explosion_group)
 
     if group_collide( rock_group, my_ship):
         lives -= 1
@@ -370,19 +385,19 @@ def draw(canvas):
 def rock_spawner():
     global rock_group
     if len( rock_group) < 12:
-        rock_sprite = Sprite([random.randint(0, WIDTH) ,
-                          random.randint(0, HEIGHT)],
-                              [ random.randint(-10, 10 ) / 10.0, random.randint(-10, 10 ) / 10.0],
+        rock_sprite = Sprite(
+                              [random.randint(0, WIDTH) , random.randint(0, HEIGHT)],
+                              [ random.randint(-30, 30 ) / 10.0, random.randint(-30, 30 ) / 10.0],
                               random.randint(-68, 68 ) / 10.0,
                               random.randint(-5, 5 ) / 10.0,
                               asteroid_image,
                               asteroid_info
                             )
         
-        while(rock_sprite.collide(my_ship)):
+        while( dist( rock_sprite.get_position(), my_ship.get_position()) < 100 ):
             rock_sprite = Sprite([random.randint(0, WIDTH) ,
                                 random.randint(0, HEIGHT)],
-                                  [ random.randint(-10, 10 ) / 10.0, random.randint(-10, 10 ) / 10.0],
+                                  [ random.randint(-30, 30 ) / 10.0, random.randint(-30, 30 ) / 10.0],
                                   random.randint(-68, 68 ) / 10.0,
                                   random.randint(-5, 5 ) / 10.0,
                                   asteroid_image,
