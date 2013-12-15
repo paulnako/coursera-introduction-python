@@ -405,5 +405,4 @@ frame.set_keyup_handler(keyup_handler)
 
 # get things rolling
 timer = simplegui.create_timer(1000.0, rock_spawner)
-timer.start()
 frame.start()
