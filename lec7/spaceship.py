@@ -15,10 +15,11 @@ angle_accel = 0
 is_pressing_left = False
 is_pressing_right = False
 angle_accel_timer = None
-a_missile = None
+missile_group = set()
 rock_group = set()
-lives = 0
+lives = 3
 score = 0
+started = False
 
 def add_vec(pos, vec, index):
     pos[index] = pos[index] + vec[index] 
@@ -103,6 +104,17 @@ def group_collide( group, other_object):
 
     return False
 
+def group_group_collide(first_group, second_group):
+    count = 0
+    for obj in set( first_group ):
+        if group_collide(second_group, obj ):
+            first_group.discard(obj)
+            count += 1
+
+    return count
+
+
+
 # Ship class
 class Ship:
     def __init__(self, pos, vel, angle, image, info):
@@ -163,7 +175,7 @@ class Ship:
             ship_thrust_sound.pause()
     
     def shoot(self):
-        global a_missile
+        global missile_group
         original_cannon_pos = [ self.pos[0] + self.image_size[0] / 2, self.pos[1] ]
 
         rotated_cannon_pos = [
@@ -172,14 +184,17 @@ class Ship:
                             (original_cannon_pos[0] - self.pos[0]) * math.sin( self.angle ) +
                                 ( original_cannon_pos[1] - self.pos[1] ) * math.cos( self.angle ) + self.pos[1] ]
 
-        a_missile = Sprite(rotated_cannon_pos, 
-                            [ 10 * math.cos( self.angle ) + self.vel[0], 10 * math.sin( self.angle ) + self.vel[1] ],
-                            self.angle,
-                            0, 
-                            missile_image, 
-                            missile_info, 
-                            missile_sound
-                            )
+        missile_group.add(  
+                        Sprite(
+                                rotated_cannon_pos, 
+                                [ 10 * math.cos( self.angle ) + self.vel[0], 10 * math.sin( self.angle ) + self.vel[1] ],
+                                self.angle,
+                                0, 
+                                missile_image, 
+                                missile_info, 
+                                missile_sound
+                             )
+                        )
         
     def get_radius(self):
         return self.radius
@@ -207,10 +222,15 @@ class Sprite:
         canvas.draw_image( self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
     
     def update(self):
+        self.age += 1
+        if self.age > self.lifespan:
+            return True
         add_vec( self.pos, self.vel, 0)
         add_vec( self.pos, self.vel, 1)
 
         self.angle += self.angle_vel
+
+        return False
 
     def collide(self, other_object):
         other_pos = other_object.get_position()
@@ -222,21 +242,26 @@ class Sprite:
         return self.pos
 
     def get_radius(self):
-        return self.get_radius
+        return self.radius
 
 def spin_ship():
-    if  - 0.5 < my_ship.angle_vel < 0.5 :
+    if  - 0.2< my_ship.angle_vel < 0.2:
         my_ship.add_angle(angle_accel)
 
 def process_sprite_group( canvas, sprite_set):
-    for sprite in sprite_set:
-        sprite.update()
+    for sprite in set( sprite_set):
+        position = sprite.get_position()
+        if 0 > position[0] or position[0] > WIDTH or 0 > position[1] or position[1] > HEIGHT :
+            sprite_set.remove(sprite)
+
+        if sprite.update():
+            sprite_set.remove(sprite)
         sprite.draw(canvas)
 
 
 def keydown_handler(key):
     global angle_accel, angle_accel_timer, thrusting, is_pressing_left, is_pressing_right 
-    angle_accel_val = 0.008
+    angle_accel_val = 0.03
     if key == simplegui.KEY_MAP['left']:
         angle_accel = -angle_accel_val
         if angle_accel_timer:
@@ -258,6 +283,20 @@ def keydown_handler(key):
     elif key == simplegui.KEY_MAP['space']:
         my_ship.shoot()
 
+# mouseclick handlers that reset UI and conditions whether splash image is drawn
+def click(pos):
+    global started, lives, score, timer
+    center = [WIDTH / 2, HEIGHT / 2]
+    size = splash_info.get_size()
+    inwidth = (center[0] - size[0] / 2) < pos[0] < (center[0] + size[0] / 2)
+    inheight = (center[1] - size[1] / 2) < pos[1] < (center[1] + size[1] / 2)
+    if (not started) and inwidth and inheight:
+        started = True
+        lives = 3
+        score = 0
+        soundtrack.rewind()
+        soundtrack.play()
+        timer.start()
 
 def keyup_handler(key):
     global angle_accel, angle_accel_timer, thrusting, is_pressing_left, is_pressing_right 
@@ -284,7 +323,7 @@ def keyup_handler(key):
 
            
 def draw(canvas):
-    global time, rock_group, a_missile, my_ship, lives, score
+    global time, rock_group, my_ship, lives, score, missile_group, started
     
     # animiate background
     time += 1
@@ -304,35 +343,52 @@ def draw(canvas):
     # draw ship and sprites
     my_ship.draw(canvas)
     process_sprite_group(canvas, rock_group)
+    process_sprite_group(canvas, missile_group)
 
     if group_collide( rock_group, my_ship):
-        lives -= lives
+        lives -= 1
+        if lives == 0:
+            started = False
+            rock_group = set()
+            missile_group = set()
+            soundtrack.pause()
+            timer.stop()
+            my_ship = Ship([100, 200], [0, 0], 0, ship_image, ship_info)
 
-    if a_missile:
-        a_missile.draw(canvas)
-    
+    score += group_group_collide(rock_group, missile_group)
+
     # update ship and sprites
     my_ship.update()
-    if a_missile:
-        a_missile.update()
 
-
+    # draw splash screen if not started
+    if not started:
+        canvas.draw_image(splash_image, splash_info.get_center(), 
+                          splash_info.get_size(), [WIDTH / 2, HEIGHT / 2], 
+                          splash_info.get_size())
             
 # timer handler that spawns a rock    
 def rock_spawner():
     global rock_group
     if len( rock_group) < 12:
-        rock_group.add(
-                    Sprite([ random.randint(0, WIDTH) ,
+        rock_sprite = Sprite([random.randint(0, WIDTH) ,
                           random.randint(0, HEIGHT)],
-                          [ random.randint(-10, 10 ) / 10.0, random.randint(-10, 10 ) / 10.0],
-                          random.randint(-68, 68 ) / 10.0,
-                          random.randint(-5, 5 ) / 10.0,
-                          asteroid_image,
-                          asteroid_info)
-                        )
-
-
+                              [ random.randint(-10, 10 ) / 10.0, random.randint(-10, 10 ) / 10.0],
+                              random.randint(-68, 68 ) / 10.0,
+                              random.randint(-5, 5 ) / 10.0,
+                              asteroid_image,
+                              asteroid_info
+                            )
+        
+        while(rock_sprite.collide(my_ship)):
+            rock_sprite = Sprite([random.randint(0, WIDTH) ,
+                                random.randint(0, HEIGHT)],
+                                  [ random.randint(-10, 10 ) / 10.0, random.randint(-10, 10 ) / 10.0],
+                                  random.randint(-68, 68 ) / 10.0,
+                                  random.randint(-5, 5 ) / 10.0,
+                                  asteroid_image,
+                                  asteroid_info
+                                )
+        rock_group.add( rock_sprite)
     
 # initialize frame
 frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
@@ -343,10 +399,11 @@ my_ship = Ship([100, 200], [0, 0], 0, ship_image, ship_info)
 # register handlers
 frame.set_draw_handler(draw)
 frame.set_keydown_handler(keydown_handler)
+frame.set_mouseclick_handler(click)
 frame.set_keyup_handler(keyup_handler)
 
-timer = simplegui.create_timer(1000.0, rock_spawner)
 
 # get things rolling
+timer = simplegui.create_timer(1000.0, rock_spawner)
 timer.start()
 frame.start()
