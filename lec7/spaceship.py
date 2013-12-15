@@ -255,7 +255,7 @@ def process_sprite_group( canvas, sprite_set):
             sprite_set.remove(sprite)
 
         if sprite.update():
-            sprite_set.remove(sprite)
+            sprite_set.discard(sprite)
         sprite.draw(canvas)
 
 
