@@ -394,7 +394,7 @@ def rock_spawner():
                               asteroid_info
                             )
         
-        while( dist( rock_sprite.get_position(), my_ship.get_position()) < 100 ):
+        while( dist( rock_sprite.get_position(), my_ship.get_position()) < 50 ):
             rock_sprite = Sprite([random.randint(0, WIDTH) ,
                                 random.randint(0, HEIGHT)],
                                   [ random.randint(-30, 30 ) / 10.0, random.randint(-30, 30 ) / 10.0],
