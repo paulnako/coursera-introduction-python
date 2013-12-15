@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-# http://www.codeskulptor.org/#user26_vCcy99ZSCB_0.py
 
 # program template for Spaceship
 import simplegui
@@ -98,7 +97,7 @@ def dist(p,q):
 
 def group_collide( group, other_object):
     for obj in set(group):
-        if collide(obj, other_object):
+        if obj.collide( other_object):
             group.remove( obj )
             return True
 
@@ -116,6 +115,9 @@ class Ship:
         self.image_center = info.get_center()
         self.image_size = info.get_size()
         self.radius = info.get_radius()
+
+    def get_position(self):
+        return self.pos
         
     def draw(self,canvas):
         # canvas.draw_circle(self.pos, self.radius, 1, "White", "White")
@@ -140,13 +142,13 @@ class Ship:
         
         self.angle += self.angle_vel
         angle_vec = angle_to_vector(self.angle)
-        angle_vec[0] *= 0.3
-        angle_vec[1] *= 0.3
+        angle_vec = [ angle_vec[0] * 0.7, angle_vec[1] * 0.7] 
+        
         if self.thrust:
             add_vec(self.vel, angle_vec, 0)
             add_vec(self.vel, angle_vec, 1)
 
-        self.vel = [ self.vel[0] * 0.92, self.vel[1] * 0.92 ]
+        self.vel = [ self.vel[0] * 0.96, self.vel[1] * 0.96 ]
 
     def add_angle(self, ang_vel):
         self.angle_vel += ang_vel
@@ -179,7 +181,9 @@ class Ship:
                             missile_sound
                             )
         
-        
+    def get_radius(self):
+        return self.radius
+    
 # Sprite class
 class Sprite:
     def __init__(self, pos, vel, ang, ang_vel, image, info, sound = None):
@@ -209,10 +213,10 @@ class Sprite:
         self.angle += self.angle_vel
 
     def collide(self, other_object):
-        other_pos = other_object.get_position()[0]
+        other_pos = other_object.get_position()
         dist = (self.pos[0] - other_pos[0]) ** 2 + (self.pos[1] - other_pos[1]) ** 2
-        dist = sqrt(dist)
-        return self.radius + other_object.get_radius() <= dist
+        dist = math.sqrt(dist)
+        return self.radius + other_object.get_radius() >= dist
 
     def get_position(self):
         return self.pos
@@ -221,7 +225,7 @@ class Sprite:
         return self.get_radius
 
 def spin_ship():
-    if  - 0.07 < my_ship.angle_vel < 0.07 :
+    if  - 0.5 < my_ship.angle_vel < 0.5 :
         my_ship.add_angle(angle_accel)
 
 def process_sprite_group( canvas, sprite_set):
@@ -299,9 +303,9 @@ def draw(canvas):
 
     # draw ship and sprites
     my_ship.draw(canvas)
-    process_sprite_group(rock_group)
+    process_sprite_group(canvas, rock_group)
 
-    if group_collide(my_ship, rock_group):
+    if group_collide( rock_group, my_ship):
         lives -= lives
 
     if a_missile:
